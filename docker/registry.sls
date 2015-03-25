@@ -1,30 +1,27 @@
-file-registry-upstart-conf:
-  file.managed:
-    - name: /etc/init/registry.conf
-    - source: salt://docker/files/upstart.conf
-    - mode: 700
-    - user: root
-    - template: jinja
-    - require:
-      - cmd: cmd-registry-image-pull
+include:
+  - docker
 
-cmd-registry-image-pull:
-  cmd.run:
-    - name: docker pull registry
-    - require:
-      - service: docker-service
-
-service-registry:
-  service.running:
-    - name: registry
-    - enable: True
-    - watch:
-      - file: file-registry-upstart-conf
-    - require:
-      - pip: pip-sqlalchemy
-
-pip-sqlalchemy:
+dockerio-pip-dependencies:
+  pkg.installed:
+    - name: python-pip
   pip.installed:
-    - name: sqlalchemy
+    - name: docker-py
     - require:
-      - pkg: python2
+      - pkg: python-pip
+    - require_in:
+      - docker: registry
+    - reload_modules: true # doesn't reload the modules?
+
+dockerio-registry-image-pull:
+  docker.pulled:
+    - name: registry
+    - tag: latest
+    - require:
+      - sls: docker
+      - pkg: python-pip
+      - pip: docker-py
+
+#service-registry:
+#  docker.run:
+#    - name: registry
+#    - container: registry
