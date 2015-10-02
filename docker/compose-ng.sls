@@ -41,7 +41,16 @@
   {%- if 'volumes' in container %}
     - volumes:
     {%- for volume in container.volumes %}
-      - {{volume}}
+      {%- set vol = volume.split(':', 2) %}
+      {%- if vol|length < 2 %}
+      - {{vol[0]}}
+      {%- else %}
+      - {{vol[0]}}:
+          bind: {{vol[1]}}
+        {%- if vol[2] == 'ro' %}
+          ro: True
+        {%- endif %}
+      {%- endif %}
     {%- endfor %}
   {%- endif %}
   {%- if 'volumes_from' in container %}
