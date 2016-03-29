@@ -1,5 +1,5 @@
 {%- from "docker/map.jinja" import compose with context %}
-{%- for name, container in compose.items() %}
+{%- for name, container in compose.items() if not name == 'version' %}
   {%- set id = container.container_name|d(name) %}
   {%- set required_containers = [] %}
 {{id}} image:
